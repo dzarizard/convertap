@@ -1,4 +1,4 @@
-package com.pawlik.convertap.convertap;
+package com.pawlik.convertap;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
