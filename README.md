@@ -1,7 +1,7 @@
 # Convertap
 
 ## Connect to the Database
-- **URL**: [localhost:8080/db](http://localhost:8080/dc)
+- **URL**: [localhost:8080/db](http://localhost:8080/db)
 - **Username**: `admin`
 - **Password**: `admin`
 

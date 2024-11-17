@@ -24,7 +24,6 @@ public class AccountController {
         this.accountRepository = accountRepository;
     }
 
-
     @GetMapping("/get/{identifier}")
     public Account getAccount(@PathVariable String identifier) {
         return accountRepository.findByIdentifier(identifier)

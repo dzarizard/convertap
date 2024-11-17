@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CacheManagementService {
-
     private final RateService rateService;
 
     public CacheManagementService(RateService rateService) {
@@ -14,14 +13,12 @@ public class CacheManagementService {
     }
 
     @Scheduled(cron = "0 0 12 * * ?", zone = "Europe/Warsaw")
-    @CacheEvict(value = "exchangeRates", allEntries = true)
-    public void clearExchangeRateCache() {
-        System.out.println("Clearing exchange rate cache...");
+    @CacheEvict(value = "exchangeUSDRate", allEntries = true)
+    public void clearExchangeUSDRateCache() {
     }
 
     @Scheduled(cron = "0 1 12 * * ?", zone = "Europe/Warsaw")
-    public void prefetchExchangeRates() {
+    public void fetchExchangeUSDRate() {
         rateService.getExchangeUSDRate();
-        System.out.println("Prefetched exchange rates into cache...");
     }
 }

@@ -1,6 +1,7 @@
 package com.pawlik.convertap.service;
 
 import com.pawlik.convertap.dto.RateResponse;
+import com.pawlik.convertap.exception.FetchExchangeUSDRateException;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -13,15 +14,13 @@ import java.util.Objects;
 
 @Service
 public class RateService {
-
     private final RestTemplate restTemplate;
 
     public RateService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
-
-    @Cacheable("exchangeRates")
+    @Cacheable("exchangeUSDRate")
     public BigDecimal getExchangeUSDRate() {
         String url = "https://api.nbp.pl/api/exchangerates/rates/A/USD/";
         try {
@@ -34,8 +33,7 @@ public class RateService {
             return Objects.requireNonNull(response.getBody()).getRates().getFirst().getMid();
 
         } catch (RestClientException e) {
-            throw new RuntimeException("Failed to fetch exchange rate: " + e.getMessage(), e);
+            throw new FetchExchangeUSDRateException("Failed to fetch exchange rate: " + e.getMessage(), e);
         }
     }
-
 }
