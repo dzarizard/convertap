@@ -1,6 +1,9 @@
 # Convertap
 
 ## Connect to the Database
-- **URL**: [localhost:8080/dc](http://localhost:8080/dc)
+- **URL**: [localhost:8080/db](http://localhost:8080/dc)
 - **Username**: `admin`
 - **Password**: `admin`
+
+## Swagger
+- **URL**: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)

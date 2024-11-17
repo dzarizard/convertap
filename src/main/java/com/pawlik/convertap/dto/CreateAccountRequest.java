@@ -2,6 +2,8 @@ package com.pawlik.convertap.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
 import java.math.BigDecimal;
 
 
@@ -14,6 +16,7 @@ public class CreateAccountRequest {
     private String lastName;
 
     @NotNull(message = "Balance is required")
+    @Positive(message = "Balance must be positive")
     private BigDecimal balance;
 
     public String getFirstName() {
