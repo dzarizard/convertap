@@ -1,6 +1,7 @@
 package com.pawlik.convertap.service;
 
 import com.pawlik.convertap.entity.Account;
+import com.pawlik.convertap.exception.ExchangeValidationException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -8,7 +9,6 @@ import java.math.RoundingMode;
 
 @Service
 public class ExchangeService {
-
     private final AccountService accountService;
     private final RateService rateService;
 
@@ -17,42 +17,45 @@ public class ExchangeService {
         this.rateService = rateService;
     }
 
-    //TODO refactor, duplicates, exceptions, validation, short methods
     public BigDecimal exchange(String accountIdentifier, String fromCurrency, String toCurrency, BigDecimal amount) {
+        validateInputs(fromCurrency, toCurrency, amount);
         Account account = accountService.getAccountByIdentifier(accountIdentifier);
-        BigDecimal convertedAmount;
 
-        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Amount must be greater than zero.");
-        }
+        BigDecimal exchangeUSDRate = rateService.getExchangeUSDRate();
+        BigDecimal convertedAmount = calculateConvertedAmount(amount, exchangeUSDRate, fromCurrency, toCurrency);
 
-        if ("PLN".equalsIgnoreCase(fromCurrency) && "USD".equalsIgnoreCase(toCurrency)) {
-            BigDecimal exchangeUSDRate = rateService.getExchangeUSDRate();
-            convertedAmount = amount.divide(exchangeUSDRate,2, RoundingMode.HALF_UP);
-
-            if (account.hasEnoughMoney(fromCurrency, amount)) {
-                account.debit(fromCurrency, amount);
-                account.credit(toCurrency, convertedAmount);
-            } else {
-                throw new RuntimeException("Insufficient funds in " + fromCurrency);
-            }
-
-        } else if ("USD".equalsIgnoreCase(fromCurrency) && "PLN".equalsIgnoreCase(toCurrency)) {
-            BigDecimal exchangeRate = rateService.getExchangeUSDRate();
-            convertedAmount = amount.multiply(exchangeRate).setScale(2, RoundingMode.HALF_EVEN);
-
-            if (account.hasEnoughMoney(fromCurrency, amount)) {
-                account.debit(fromCurrency, amount);
-                account.credit(toCurrency, convertedAmount);
-            } else {
-                throw new RuntimeException("Insufficient funds in " + fromCurrency);
-            }
-
-        } else {
-            throw new RuntimeException("Currency conversion from " + fromCurrency + " to " + toCurrency + " is not supported.");
-        }
-
+        proceedExchange(fromCurrency, toCurrency, amount, account, convertedAmount);
         accountService.updateAccount(account);
         return convertedAmount;
+    }
+
+    private void validateInputs(String fromCurrency, String toCurrency, BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ExchangeValidationException("Amount must be greater than zero.");
+        }
+
+        if (fromCurrency == null || toCurrency == null) {
+            throw new ExchangeValidationException("Currency values cannot be null.");
+        }
+
+        if (!("PLN".equalsIgnoreCase(fromCurrency) && "USD".equalsIgnoreCase(toCurrency)) &&
+                !("USD".equalsIgnoreCase(fromCurrency) && "PLN".equalsIgnoreCase(toCurrency))) {
+            throw new ExchangeValidationException("Unsupported currency conversion: " + fromCurrency + " to " + toCurrency);
+        }
+    }
+
+    private BigDecimal calculateConvertedAmount(BigDecimal amount, BigDecimal exchangeUSDRate, String fromCurrency, String toCurrency) {
+        if ("PLN".equalsIgnoreCase(fromCurrency) && "USD".equalsIgnoreCase(toCurrency)) {
+            return amount.divide(exchangeUSDRate, 2, RoundingMode.HALF_EVEN);
+        } else if ("USD".equalsIgnoreCase(fromCurrency) && "PLN".equalsIgnoreCase(toCurrency)) {
+            return amount.multiply(exchangeUSDRate).setScale(2, RoundingMode.HALF_EVEN);
+        } else {
+            throw new ExchangeValidationException("Unsupported conversion logic for: " + fromCurrency + " to " + toCurrency);
+        }
+    }
+
+    private void proceedExchange(String fromCurrency, String toCurrency, BigDecimal amount, Account account, BigDecimal convertedAmount) {
+        account.debit(fromCurrency, amount);
+        account.credit(toCurrency, convertedAmount);
     }
 }
