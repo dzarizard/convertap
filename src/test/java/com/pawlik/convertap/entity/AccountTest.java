@@ -1,7 +1,6 @@
 package com.pawlik.convertap.entity;
 
 import com.pawlik.convertap.exception.InsufficientFundsException;
-import com.pawlik.convertap.exception.InvalidAmountException;
 import com.pawlik.convertap.exception.InvalidCurrencyException;
 import org.junit.jupiter.api.Test;
 
